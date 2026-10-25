@@ -163,7 +163,7 @@ function createAndroid({ dataDir, log, settings }) {
     function sdkInstall(packages, label) {
         const t = tools();
         if (!t.sdkmanager) return Promise.reject(new Error('Brak Android SDK — zainstaluj je w zakładce Systemy.'));
-        if (!t.java) return Promise.reject(new Error('Brak Javy (potrzebna dla sdkmanager): sudo dnf install java-21-openjdk'));
+        if (!t.java) return Promise.reject(new Error('Brak Javy (potrzebna dla sdkmanager): sudo dnf install java-headless'));
         log.info('sdkmanager --install', packages.join(' '));
         setTask({ label, percent: 0, detail: 'Przygotowanie…' });
         return new Promise((resolve, reject) => {
@@ -202,7 +202,7 @@ function createAndroid({ dataDir, log, settings }) {
 
     async function setupSdk() {
         const t = tools();
-        if (!t.java) throw new Error('Brak Javy (potrzebna dla Android SDK). Zainstaluj: sudo dnf install java-21-openjdk');
+        if (!t.java) throw new Error('Brak Javy (potrzebna dla Android SDK). Zainstaluj: sudo dnf install java-headless');
         if (!t.sdkmanager) {
             const root = path.join(dataDir, 'sdk');
             const zip = path.join(dataDir, 'cmdline-tools.zip');

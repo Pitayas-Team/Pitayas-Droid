@@ -62,7 +62,7 @@
       "artifactName": "pitaya-droid-${version}.${arch}.${ext}",
       "depends": [
         "scrcpy",
-        "java-21-openjdk-headless",
+        "java-headless",
         "unzip"
       ]
     }

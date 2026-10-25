@@ -41,7 +41,7 @@
       ['Android SDK', status.hasSdk, status.sdkRoot],
       ['Emulator', status.hasEmulator, ''],
       ['adb', status.hasAdb, ''],
-      ['Java (dla sdkmanager)', status.hasJava, status.hasJava ? '' : 'sudo dnf install java-21-openjdk'],
+      ['Java (dla sdkmanager)', status.hasJava, status.hasJava ? '' : 'sudo dnf install java-headless'],
       ['Przyspieszenie KVM', status.kvm, status.kvm ? '' : 'włącz wirtualizację w BIOS'],
       ['scrcpy (okna pojedynczych aplikacji)', status.hasScrcpy, status.hasScrcpy ? '' : 'sudo dnf install scrcpy'],
     ];

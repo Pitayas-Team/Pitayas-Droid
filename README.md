@@ -13,7 +13,7 @@ i scrcpy.
 ## Wymagania (Fedora / Nobara)
 
 ```bash
-sudo dnf install java-21-openjdk-headless scrcpy unzip
+sudo dnf install java-headless scrcpy unzip
 ```
 
 Android SDK jest szukany w `ANDROID_HOME`, `~/Android/Sdk`, a gdy go nie ma — aplikacja pobiera go sama
