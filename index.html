@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <title>Pitaya Droid</title>
+  <link rel="stylesheet" href="core/ui/pitaya-theme.css">
+  <style>
+    .head-row { display: flex; align-items: center; gap: 12px; }
+    .head-row .m-tabs { flex: 1; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+
+    .dev { background: var(--m-panel); border: 1px solid var(--m-line); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .dev.on { border-color: rgba(76,195,138,0.35); }
+    .dev-top { display: flex; gap: 12px; align-items: center; }
+    .dev-ico { width: 44px; height: 44px; border-radius: 14px; background: rgba(76,195,138,0.12); color: var(--m-leaf); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .dev-ico .ico { width: 24px; height: 24px; }
+    .dev-name { font-size: 14.5px; font-weight: 700; color: var(--m-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dev-sub { font-size: 12px; color: var(--m-text-3); margin-top: 2px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .dev-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .dev-actions .m-btn { flex: 1; justify-content: center; }
+    .dev-more { position: relative; }
+    .menu { display: none; position: absolute; right: 0; bottom: 38px; background: var(--m-surface); border: 1px solid var(--m-line-strong); border-radius: 14px; padding: 6px; min-width: 210px; z-index: 50; box-shadow: 0 18px 40px rgba(0,0,0,0.45); }
+    .menu.open { display: block; }
+    .menu button { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--m-text-2); padding: 9px 12px; border-radius: 9px; font: inherit; font-size: 12.5px; cursor: pointer; }
+    .menu button:hover { background: var(--m-item); color: var(--m-text); }
+    .menu button.danger { color: var(--m-danger); }
+
+    .empty { text-align: center; padding: 40px 20px; color: var(--m-text-3); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .empty .big { width: 64px; height: 64px; border-radius: 50%; background: var(--m-accent-soft); color: var(--m-accent); display: flex; align-items: center; justify-content: center; }
+    .empty .big .ico { width: 32px; height: 32px; }
+    .empty strong { color: var(--m-text); font-size: 15px; }
+
+    .drop-zone { border: 1.5px dashed var(--m-line-strong); background: var(--m-field); border-radius: 18px; padding: 20px; cursor: pointer; text-align: center; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .drop-zone:hover, .drop-zone.active { border-color: var(--m-accent); background: var(--m-accent-soft); }
+    .drop-zone .ico { width: 26px; height: 26px; color: var(--m-accent); }
+    .drop-zone strong { font-size: 13.5px; color: var(--m-text); display: block; }
+    .drop-zone span { font-size: 12px; color: var(--m-text-3); }
+
+    .apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .app { background: var(--m-panel); border: 1px solid var(--m-line); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .app-top { display: flex; gap: 10px; align-items: center; min-width: 0; }
+    .app-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--m-item); flex-shrink: 0; object-fit: cover; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: var(--m-accent); }
+    .app-name { font-size: 13.5px; font-weight: 700; color: var(--m-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-pkg { font-size: 11px; color: var(--m-text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'JetBrains Mono', monospace; }
+    .app-actions { display: flex; gap: 6px; }
+    .app-actions .m-btn.accent { flex: 1; justify-content: center; }
+
+    .images { display: flex; flex-direction: column; gap: 8px; }
+    .img-row { display: flex; align-items: center; gap: 12px; background: var(--m-panel); border: 1px solid var(--m-line); border-radius: 16px; padding: 12px 14px; }
+    .img-api { width: 46px; height: 46px; border-radius: 13px; background: var(--m-item); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+    .img-api b { font-size: 15px; color: var(--m-text); line-height: 1; }
+    .img-api small { font-size: 9.5px; color: var(--m-text-3); letter-spacing: 0.05em; }
+    .img-row.inst .img-api { background: rgba(76,195,138,0.14); }
+    .img-row.inst .img-api b { color: var(--m-leaf); }
+    .img-main { flex: 1; min-width: 0; }
+    .img-title { font-size: 13.5px; font-weight: 700; color: var(--m-text); }
+    .img-variants { display: flex; gap: 6px; flex-wrap: wrap; }
+    .var-btn { font: inherit; font-size: 11.5px; font-weight: 600; border-radius: 999px; padding: 5px 11px; border: 1px solid var(--m-line-strong); background: var(--m-item); color: var(--m-text-2); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+    .var-btn:hover { border-color: var(--m-accent); color: var(--m-text); }
+    .var-btn.inst { background: rgba(76,195,138,0.14); color: var(--m-leaf); border-color: rgba(76,195,138,0.3); }
+    .var-btn .x { opacity: 0.6; }
+    .var-btn .x:hover { opacity: 1; color: var(--m-danger); }
+
+    .setup { display: flex; flex-direction: column; gap: 10px; }
+    .check-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--m-text-2); }
+    .check-row .m-status-dot.bad { background: var(--m-danger); }
+    .check-row code { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--m-text-3); }
+
+    .taskbar { display: none; position: sticky; bottom: 0; margin: 0 18px 14px; background: var(--m-surface); border: 1px solid var(--m-line-strong); border-radius: 16px; padding: 12px 14px; gap: 8px; flex-direction: column; box-shadow: 0 -10px 30px rgba(0,0,0,0.35); }
+    .taskbar.show { display: flex; }
+    .taskbar-head { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; }
+    .taskbar-head b { color: var(--m-text); }
+    .taskbar-head span { color: var(--m-text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .m-progress.indeterminate > div { width: 35% !important; animation: indet 1.2s ease-in-out infinite; }
+    @keyframes indet { 0% { margin-left: -35%; } 100% { margin-left: 100%; } }
+
+    .form2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--m-text-2); }
+    .switch-row input { width: 18px; height: 18px; accent-color: var(--m-accent); }
+    .license-text { white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--m-text-2); background: var(--m-field); border-radius: 12px; padding: 12px; max-height: 300px; overflow-y: auto; }
+    .hint { font-size: 12px; color: var(--m-text-3); line-height: 1.5; }
+    .hint b { color: var(--m-text-2); }
+    .m-modal { max-width: 560px; width: calc(100% - 40px); }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol>
+    <symbol id="i-android" viewBox="0 0 24 24"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.43 11.43 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm-2 20h-4v-1h4v1zm3.25-3H6.75V4h10.5v14z"/></symbol>
+    <symbol id="i-tablet" viewBox="0 0 24 24"><path d="M21 4H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 1.99-.9 1.99-2L23 6c0-1.1-.9-2-2-2zm-2 14H5V6h14v12z"/></symbol>
+    <symbol id="i-tv" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></symbol>
+    <symbol id="i-apps" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></symbol>
+    <symbol id="i-window" viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.89-2-2-2zm0 14H5V8h14v10z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></symbol>
+  </svg>
+
+  <!-- PASEK OKNA -->
+  <div class="m-titlebar">
+    <div class="m-titlebar-brand">
+      <img src="icon.svg" alt="">
+      <span class="m-titlebar-name">Pitaya Droid</span>
+    </div>
+    <div class="m-titlebar-actions">
+      <div class="m-update-pill" id="updatePill" title="Dostępna aktualizacja"><svg class="ico"><use href="#i-download"/></svg>Aktualizacja</div>
+      <button class="m-win-btn" id="btnSettings" onclick="PitayaUI.openModal('modalSettings')" title="Ustawienia i aktualizacje"><svg class="ico"><use href="#i-gear"/></svg><span class="m-dot"></span></button>
+      <div class="m-win-sep"></div>
+      <button class="m-win-btn" data-win="min" title="Minimalizuj"><svg viewBox="0 0 12 12"><path d="M1 6.5h10"/></svg></button>
+      <button class="m-win-btn close" data-win="close" title="Schowaj do zasobnika"><svg viewBox="0 0 12 12"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg></button>
+    </div>
+  </div>
+
+  <div class="m-content">
+    <div class="m-container">
+      <div class="m-hero">
+        <div class="m-hero-brand">
+          <div class="m-logo-box"><img src="icon.svg" alt="Pitaya Droid"></div>
+          <div>
+            <div class="m-hero-kicker">Pitayas</div>
+            <div class="m-hero-title">Pitaya <span>Droid</span></div>
+          </div>
+        </div>
+        <div class="m-hero-tagline">Emulator Androida: cały system w oknie albo pojedyncze aplikacje jak zwykłe programy na komputerze. Wybierz wersję Androida od 5 do najnowszej.</div>
+      </div>
+
+      <div class="head-row">
+        <div class="m-tabs">
+          <button class="m-tab active" data-tab="devices"><svg class="ico"><use href="#i-phone"/></svg>Urządzenia</button>
+          <button class="m-tab" data-tab="apps"><svg class="ico"><use href="#i-apps"/></svg>Aplikacje</button>
+          <button class="m-tab" data-tab="systems"><svg class="ico"><use href="#i-layers"/></svg>Wersje Androida</button>
+        </div>
+      </div>
+
+      <!-- PIERWSZA KONFIGURACJA -->
+      <div class="m-panel" id="setupPanel" style="display:none">
+        <div class="m-panel-header"><span class="m-panel-title">Przygotowanie emulatora</span></div>
+        <div class="m-panel-body setup">
+          <div id="checkList"></div>
+          <div class="hint" id="setupHint"></div>
+          <div><button class="m-btn accent" id="btnSetup"><svg class="ico"><use href="#i-download"/></svg>Zainstaluj emulator</button></div>
+        </div>
+      </div>
+
+      <!-- URZĄDZENIA -->
+      <div class="m-view active" id="view-devices">
+        <div class="grid" id="devList"></div>
+      </div>
+
+      <!-- APLIKACJE -->
+      <div class="m-view" id="view-apps">
+        <div class="m-panel">
+          <div class="m-panel-body">
+            <div class="form2">
+              <div class="m-field">
+                <label class="m-label" for="appsAvd">Urządzenie</label>
+                <select class="m-select" id="appsAvd"></select>
+              </div>
+              <div class="m-field">
+                <label class="m-label">Stan</label>
+                <div class="m-status" id="appsState" style="height:40px"><span class="m-status-dot"></span>—</div>
+              </div>
+            </div>
+            <div class="drop-zone" id="dropZone">
+              <svg class="ico"><use href="#i-upload"/></svg>
+              <div><strong>Upuść tutaj plik APK albo kliknij, żeby wybrać</strong><span>.apk, .xapk, .apks, .apkm — emulator włączy się sam w tle</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="apps" id="appList"></div>
+      </div>
+
+      <!-- WERSJE ANDROIDA -->
+      <div class="m-view" id="view-systems">
+        <div class="m-panel">
+          <div class="m-panel-header">
+            <span class="m-panel-title">Obrazy systemu</span>
+            <button class="m-btn small" id="btnRefreshImages"><svg class="ico"><use href="#i-refresh"/></svg>Odśwież listę</button>
+          </div>
+          <div class="m-panel-body">
+            <div class="hint"><b>Google Play</b> — ze sklepem Play (logowanie kontem Google). <b>Google APIs</b> — usługi Google bez sklepu, z dostępem do roota. <b>AOSP</b> — czysty Android. Jeden obraz to ok. 1–2 GB. Zielone są już pobrane — kliknij, żeby utworzyć z nich urządzenie.</div>
+            <div class="images" id="imageList"><div class="m-small">Wczytywanie…</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="taskbar" id="taskbar">
+    <div class="taskbar-head"><b id="taskLabel">—</b><span id="taskDetail"></span></div>
+    <div class="m-progress" id="taskProgress"><div id="taskBar"></div></div>
+  </div>
+
+  <!-- MODAL: NOWE URZĄDZENIE -->
+  <div class="m-modal-overlay" id="modalCreate">
+    <div class="m-modal">
+      <div class="m-modal-header">
+        <span class="m-modal-title">Nowe urządzenie z Androidem</span>
+        <button class="m-modal-close" onclick="PitayaUI.closeModal('modalCreate')">✕</button>
+      </div>
+      <div class="m-modal-body">
+        <div class="m-field">
+          <label class="m-label" for="cName">Nazwa</label>
+          <input class="m-input" id="cName" placeholder="np. Mój telefon">
+        </div>
+        <div class="form2">
+          <div class="m-field">
+            <label class="m-label" for="cApi">Wersja Androida</label>
+            <select class="m-select" id="cApi"></select>
+          </div>
+          <div class="m-field">
+            <label class="m-label" for="cTag">Odmiana</label>
+            <select class="m-select" id="cTag"></select>
+          </div>
+        </div>
+        <div class="m-field">
+          <label class="m-label" for="cDevice">Rodzaj urządzenia</label>
+          <select class="m-select" id="cDevice"></select>
+        </div>
+        <div class="form2">
+          <div class="m-field">
+            <label class="m-label" for="cRam">Pamięć RAM</label>
+            <select class="m-select" id="cRam">
+              <option value="2048">2 GB</option>
+              <option value="3072">3 GB</option>
+              <option value="4096" selected>4 GB</option>
+              <option value="6144">6 GB</option>
+              <option value="8192">8 GB</option>
+            </select>
+          </div>
+          <div class="m-field">
+            <label class="m-label" for="cStorage">Miejsce na dane</label>
+            <select class="m-select" id="cStorage">
+              <option value="4">4 GB</option>
+              <option value="8" selected>8 GB</option>
+              <option value="16">16 GB</option>
+              <option value="32">32 GB</option>
+              <option value="64">64 GB</option>
+            </select>
+          </div>
+        </div>
+        <div class="hint" id="cHint"></div>
+      </div>
+      <div class="m-modal-footer">
+        <button class="m-btn small" onclick="PitayaUI.closeModal('modalCreate')">Anuluj</button>
+        <button class="m-btn small accent" id="btnCreate"><svg class="ico"><use href="#i-plus"/></svg>Utwórz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LICENCJA SDK -->
+  <div class="m-modal-overlay" id="modalLicense">
+    <div class="m-modal">
+      <div class="m-modal-header"><span class="m-modal-title">Licencja Android SDK</span></div>
+      <div class="m-modal-body">
+        <div class="hint">Google wymaga akceptacji licencji przed pobraniem tego składnika.</div>
+        <div class="license-text" id="licenseText"></div>
+      </div>
+      <div class="m-modal-footer">
+        <button class="m-btn small" id="btnLicenseNo">Odrzuć</button>
+        <button class="m-btn small accent" id="btnLicenseYes">Akceptuję</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: USTAWIENIA / AKTUALIZACJE -->
+  <div class="m-modal-overlay" id="modalSettings">
+    <div class="m-modal">
+      <div class="m-modal-header">
+        <span class="m-modal-title">Ustawienia</span>
+        <button class="m-modal-close" onclick="PitayaUI.closeModal('modalSettings')">✕</button>
+      </div>
+      <div class="m-modal-body">
+        <div class="m-about">
+          <img src="icon.svg" alt="">
+          <div>
+            <div class="m-about-name">Pitaya Droid</div>
+            <div class="m-about-desc">Emulator Androida — cały system albo pojedyncze aplikacje</div>
+            <div class="m-small">Wersja: <span id="appVersionText">—</span></div>
+          </div>
+        </div>
+        <div class="m-update-card">
+          <div class="m-update-head">
+            <div>
+              <div class="m-update-title">Aktualizacje z GitHub</div>
+              <div class="m-update-status" id="updateStatusText">Sprawdź, czy jest nowsza wersja w repozytorium</div>
+            </div>
+            <button class="m-btn small" id="btnCheckUpdate">Sprawdź</button>
+          </div>
+          <div class="m-update-details" id="updateDetails">
+            <div id="updateInfo"></div>
+            <div style="display:flex; gap:8px;">
+              <button class="m-btn small success" id="btnApplyUpdate">Zainstaluj aktualizację</button>
+              <button class="m-btn small accent" id="btnRestartApp" style="display:none;">Uruchom ponownie</button>
+            </div>
+          </div>
+        </div>
+        <div class="form2">
+          <div class="m-field">
+            <label class="m-label" for="sGpu">Grafika emulatora</label>
+            <select class="m-select" id="sGpu">
+              <option value="auto">Automatycznie</option>
+              <option value="host">Karta graficzna (najszybciej)</option>
+              <option value="swiftshader_indirect">Procesor (gdy są błędy grafiki)</option>
+            </select>
+          </div>
+          <div class="m-field">
+            <label class="m-label" for="sAppWindow">Okno pojedynczej aplikacji</label>
+            <select class="m-select" id="sAppWindow">
+              <option value="">Jak ekran urządzenia</option>
+              <option value="720x1280/280">Telefon 720×1280</option>
+              <option value="1080x1920/420">Telefon 1080×1920</option>
+              <option value="1280x720/240">Poziomo 1280×720</option>
+              <option value="1920x1080/320">Poziomo 1920×1080</option>
+              <option value="1600x1000/240">Tablet 1600×1000</option>
+            </select>
+          </div>
+        </div>
+        <div class="switch-row"><span>Dźwięk z Androida</span><input type="checkbox" id="sAudio"></div>
+        <div class="switch-row"><span>Wyłączaj emulator w tle po zamknięciu ostatniej aplikacji</span><input type="checkbox" id="sStopHeadless"></div>
+        <div class="m-field">
+          <span class="m-label">Android SDK</span>
+          <div class="data-row" style="display:flex;gap:10px;align-items:center"><code id="sdkPathText" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--m-text-2);background:var(--m-surface);padding:6px 10px;border-radius:999px">—</code><button class="m-btn small" id="btnPickSdk">Zmień</button></div>
+        </div>
+        <div class="m-field">
+          <span class="m-label">Folder danych (Pitaya Core)</span>
+          <div style="display:flex;gap:10px;align-items:center"><code id="dataDirText" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--m-text-2);background:var(--m-surface);padding:6px 10px;border-radius:999px">—</code><button class="m-btn small" id="btnOpenDataDir">Otwórz</button></div>
+        </div>
+        <div class="m-small">Repozytorium: <a class="m-link" id="repoLink" href="#">github.com/Pitayas-Team/Pitayas-Droid</a></div>
+      </div>
+      <div class="m-modal-footer">
+        <button class="m-btn small danger" onclick="window.droid.quit()">Zamknij aplikację</button>
+        <button class="m-btn small accent" onclick="PitayaUI.closeModal('modalSettings')">Gotowe</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="core/ui/pitaya-ui.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

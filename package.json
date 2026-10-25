@@ -1,0 +1,70 @@
+{
+  "name": "pitaya-droid",
+  "version": "0.1.0-beta",
+  "description": "Pitaya Droid — emulator Androida: cały system albo pojedyncze aplikacje",
+  "main": "main.js",
+  "author": {
+    "name": "Pitayas",
+    "email": "inbox@rakunek.com"
+  },
+  "homepage": "https://github.com/Pitayas-Team/Pitayas-Droid",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron --no-sandbox ."
+  },
+  "devDependencies": {
+    "electron": "32.3.3",
+    "electron-builder": "^26.15.3"
+  },
+  "allowScripts": {
+    "electron@32.3.3": true
+  },
+  "build": {
+    "appId": "com.pitayas.droid",
+    "productName": "Pitaya Droid",
+    "copyright": "Copyright © 2026 Pitayas",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "android.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "icon.svg",
+      "icon.png",
+      "package.json",
+      "core/**/*",
+      "build/icons/**/*"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "rpm"
+      ],
+      "executableName": "pitaya-droid",
+      "icon": "build/icons",
+      "category": "Development",
+      "synopsis": "Emulator Androida — cały system albo pojedyncze aplikacje",
+      "maintainer": "Pitayas <inbox@rakunek.com>",
+      "vendor": "Pitayas",
+      "executableArgs": [
+        "--no-sandbox"
+      ]
+    },
+    "appImage": {
+      "artifactName": "PitayaDroid-${version}-${arch}.${ext}"
+    },
+    "rpm": {
+      "packageName": "pitaya-droid",
+      "artifactName": "pitaya-droid-${version}.${arch}.${ext}",
+      "depends": [
+        "scrcpy",
+        "java-21-openjdk-headless",
+        "unzip"
+      ]
+    }
+  }
+}
